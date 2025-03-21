@@ -26,9 +26,8 @@ apt install -y curl wget git build-essential
 echo -e "${GREEN}Cài đặt Go...${NC}"
 wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
-echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
-source ~/.bashrc
-go version
+export PATH=$PATH:/usr/local/go/bin  # Thêm PATH ngay trong script
+go version || { echo -e "${RED}Cài đặt Go thất bại!${NC}"; exit 1; }
 
 # Cài đặt Rust
 echo -e "${GREEN}Cài đặt Rust...${NC}"
@@ -36,7 +35,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 source ~/.cargo/env
 rustup install 1.81.0
 rustup default 1.81.0
-rustc --version
+rustc --version || { echo -e "${RED}Cài đặt Rust thất bại!${NC}"; exit 1; }
 
 # Cài đặt Risc0
 echo -e "${GREEN}Cài đặt Risc0...${NC}"
@@ -74,8 +73,14 @@ cd $WORK_DIR/light-node
 
 # Build node
 echo -e "${GREEN}Build Light Node...${NC}"
-go mod tidy
-go build -o light-node
+/usr/local/go/bin/go mod tidy || { echo -e "${RED}Go mod tidy thất bại!${NC}"; exit 1; }
+/usr/local/go/bin/go build -o light-node || { echo -e "${RED}Build thất bại!${NC}"; exit 1; }
+
+# Kiểm tra file thực thi
+if [ ! -f "$WORK_DIR/light-node/light-node" ]; then
+    echo -e "${RED}File light-node không tồn tại! Build thất bại.${NC}"
+    exit 1
+fi
 
 # Tạo file systemd service
 echo -e "${GREEN}Tạo systemd service để chạy node trong background...${NC}"
@@ -103,6 +108,7 @@ systemctl start layeredge-light-node.service
 
 # Kiểm tra trạng thái
 echo -e "${YELLOW}Kiểm tra trạng thái service...${NC}"
+sleep 2  # Đợi vài giây để service khởi động
 systemctl status layeredge-light-node.service --no-pager
 
 echo -e "${YELLOW}=== Cài đặt hoàn tất! Light Node đang chạy trong background. ===${NC}"
