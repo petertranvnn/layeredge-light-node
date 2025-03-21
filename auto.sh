@@ -43,6 +43,11 @@ echo -e "${GREEN}Cài đặt Risc0...${NC}"
 curl -L https://risczero.com/install | bash
 rzup install
 
+# Thiết lập thư mục làm việc
+WORK_DIR="/root/lightnode"
+mkdir -p $WORK_DIR
+cd $WORK_DIR
+
 # Nhập private key từ người dùng
 echo -e "${YELLOW}Vui lòng nhập private key của bạn (từ ví MetaMask hoặc tương tự):${NC}"
 read -p "Private Key: " PRIVATE_KEY
@@ -50,11 +55,6 @@ if [ -z "$PRIVATE_KEY" ]; then
     echo -e "${RED}Private key không được để trống!${NC}"
     exit 1
 fi
-
-# Thiết lập thư mục làm việc
-WORK_DIR="/opt/layeredge-light-node"
-mkdir -p $WORK_DIR
-cd $WORK_DIR
 
 # Thiết lập biến môi trường trong file riêng
 echo -e "${GREEN}Thiết lập biến môi trường...${NC}"
@@ -89,7 +89,7 @@ ExecStart=$WORK_DIR/light-node/light-node
 WorkingDirectory=$WORK_DIR/light-node
 EnvironmentFile=$WORK_DIR/.env
 Restart=always
-User=$(whoami)
+User=root
 
 [Install]
 WantedBy=multi-user.target
@@ -106,6 +106,6 @@ echo -e "${YELLOW}Kiểm tra trạng thái service...${NC}"
 systemctl status layeredge-light-node.service --no-pager
 
 echo -e "${YELLOW}=== Cài đặt hoàn tất! Light Node đang chạy trong background. ===${NC}"
-echo -e "${GREEN}Bạn có thể kiểm tra trạng thái bằng lệnh: systemctl status layeredge-light-node.service${NC}"
+echo -e "${GREEN}Kiểm tra trạng thái: systemctl status layeredge-light-node.service${NC}"
 echo -e "${GREEN}Dừng service: systemctl stop layeredge-light-node.service${NC}"
 echo -e "${GREEN}Khởi động lại: systemctl restart layeredge-light-node.service${NC}"
